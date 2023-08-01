@@ -7,12 +7,7 @@ module.exports = {
     try {
       const thoughts = await Thought.find();
 
-      const thoughtObj = {
-        thoughts,
-        thoughtCount: await thoughtCount(),
-      };
-
-      res.json(thoughtObj);
+      res.json(thoughts);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -21,17 +16,13 @@ module.exports = {
       // Get a single thought
   async getSingleThought(req, res) {
     try {
-      const thought = await Thought.findOne({ _id: req.params.thoughtId })
-        .select('-__v');
+      const thought = await Thought.findOne({ _id: req.params.thoughtId });
 
       if (!thought) {
         return res.status(404).json({ message: 'No thought with that ID' })
       }
 
-      res.json({
-        thought,
-        grade: await grade(req.params.thoughtId),
-      });
+      res.json(thought);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -46,15 +37,15 @@ module.exports = {
         return res.status(404).json({ message: 'No such thought exists' });
       }
 
-      const course = await User.findOneAndUpdate(
+      const user = await User.findOneAndUpdate(
         { thoughts: req.params.thoughtId },
         { $pull: { thoughts: req.params.thoughtId } },
         { new: true }
       );
 
-      if (!course) {
+      if (!user) {
         return res.status(404).json({
-          message: 'Thought deleted, but no courses found',
+          message: 'Thought deleted, but no users found',
         });
       }
 
@@ -72,7 +63,7 @@ module.exports = {
     try {
       const thought = await Thought.findOneAndUpdate(
         { _id: req.params.thoughtId },
-        { $addToSet: { assignments: req.body } },
+        { $addToSet: { reactions: req.body } },
         { runValidators: true, new: true }
       );
 
